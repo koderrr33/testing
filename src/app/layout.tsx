@@ -17,11 +17,11 @@ const logoScript = Pinyon_Script({
 
 export const metadata: Metadata = {
   title: {
-    default: "888balens — Hand-Painted Streetwear Indonesia",
-    template: "%s | 888balens",
+    default: ".bbr — Winter Sport Gear",
+    template: "%s | .bbr",
   },
   description:
-    "Limited drop, hand-painted streetwear. Hoodie, jersey, tracktop — custom order available.",
+    "be better. Editorial winter sport gear — helmets, jackets, goggles, and more from .bbr.",
 };
 
 export default function RootLayout({

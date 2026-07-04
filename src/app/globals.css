@@ -7,6 +7,8 @@
   --brand-cream: #f5f3ef;
   --brand-maroon: #6b1a1a;
   --brand-gold: #c4a574;
+  --navbar-height: 3.75rem;
+  --navbar-height-md: 5.25rem;
 }
 
 @theme inline {
@@ -22,6 +24,10 @@
 
 html {
   scroll-behavior: smooth;
+}
+
+html.home-scroll-snap {
+  scroll-snap-type: y proximity;
 }
 
 body {
