@@ -68,9 +68,9 @@ export const exploreLinks: NavLink[] = [
 
 export const featuredNavProducts = (
   [
-    "winter-helmet-bbr",
-    "winter-jacket-v2-bbr",
-    "winter-skate-bbr",
+    "yourproduct",
+    "yourproduct",
+    "yourproduct",
   ] as const
 )
   .map((slug) => products.find((product) => product.slug === slug))

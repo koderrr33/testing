@@ -29,7 +29,7 @@ export function ProductCard({
         <div
           className={
             isCatalog
-              ? "relative aspect-[4/5] overflow-hidden rounded-3xl bg-neutral-200 transition-opacity group-hover:opacity-90"
+              ? "relative aspect-[4/5] overflow-hidden rounded-xl bg-neutral-200 transition-opacity group-hover:opacity-90"
               : "relative aspect-[3/4] overflow-hidden bg-white transition-opacity group-hover:opacity-90"
           }
         >
@@ -42,30 +42,28 @@ export function ProductCard({
                 ? "object-cover object-center grayscale contrast-110 transition-transform duration-500 group-hover:scale-[1.04]"
                 : "object-contain object-center p-2 transition-transform duration-500 group-hover:scale-[1.02]"
             }
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 16vw"
+            sizes="(max-width: 640px) 40vw, (max-width: 1024px) 25vw, 12vw"
           />
-
           {isCatalog && (
             <>
               <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
-              <div className="absolute bottom-6 left-6">
-                <p className="text-3xl font-bold uppercase leading-[0.95] tracking-tight text-white sm:text-4xl">
+              <div className="absolute bottom-3 left-3">
+                <p className="text-lg font-bold uppercase leading-[0.95] tracking-tight text-white sm:text-xl">
                   New
                 </p>
-                <p className="text-3xl font-bold uppercase leading-[0.95] tracking-tight text-white sm:text-4xl">
+                <p className="text-lg font-bold uppercase leading-[0.95] tracking-tight text-white sm:text-xl">
                   {product.name}
                 </p>
               </div>
             </>
           )}
         </div>
-
         {!isCatalog && (
-          <div className="mt-3 space-y-0.5">
-            <p className="text-[11px] font-bold tracking-[0.12em] text-black uppercase">
+          <div className="mt-1.5 space-y-0">
+            <p className="text-[9px] font-bold tracking-[0.12em] text-black uppercase">
               {product.name}
             </p>
-            <p className="text-[11px] font-medium text-black/55">
+            <p className="text-[9px] font-medium text-black/55">
               {formatIdr(product.price)}
             </p>
           </div>
