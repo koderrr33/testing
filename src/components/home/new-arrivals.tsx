@@ -2,7 +2,9 @@
 
 import { useCallback, useRef, useState } from "react";
 
-import { newArrivalProducts } from "@/config/new-arrivals";
+import { getNewArrivals } from "@/lib/products";
+
+const newArrivalProducts = getNewArrivals();
 import { NewArrivalCard } from "@/components/home/new-arrival-card";
 
 export function NewArrivals() {

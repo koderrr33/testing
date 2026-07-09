@@ -1,13 +1,13 @@
 export type XenditMode = "test" | "live";
 
-/**
- * Sandbox vs production switch.
- * Default: test — aman untuk development & demo buyer.
- *
- * Production: set XENDIT_MODE=live + isi Live keys di .env
- * TODO: Ganti ke Live Key saat production
- */
+let cachedMode: XenditMode | null = null;
+
+export function setXenditMode(mode: XenditMode): void {
+  cachedMode = mode;
+}
+
 export function getXenditMode(): XenditMode {
+  if (cachedMode) return cachedMode;
   const mode = process.env.XENDIT_MODE ?? "test";
   return mode === "live" ? "live" : "test";
 }

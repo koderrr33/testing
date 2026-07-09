@@ -9,6 +9,7 @@ import {
   getOrderByExternalId,
   updateOrderByExternalId,
 } from "@/lib/orders";
+import { auth } from "@/lib/next-auth";
 import type { Order, OrderLineItem } from "@/lib/orders";
 import { getProductBySlug, isSizeAvailable } from "@/lib/products";
 import {
@@ -73,12 +74,14 @@ async function processCheckout(
     customerPhone: string;
   },
   failureRedirectUrl: string,
+  userId?: string,
 ): Promise<CheckoutActionState> {
   const externalId = `ORD-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
   const appUrl = getAppUrl();
 
-  createOrder({
+  await createOrder({
     externalId,
+    userId,
     lineItems,
     amount,
     ...customer,
@@ -109,14 +112,14 @@ async function processCheckout(
       failureRedirectUrl: `${failureRedirectUrl}${failureRedirectUrl.includes("?") ? "&" : "?"}order=${externalId}`,
     });
 
-    updateOrderByExternalId(externalId, {
+    await updateOrderByExternalId(externalId, {
       xenditInvoiceId: invoice.id,
       invoiceUrl: invoice.invoice_url,
     });
 
     return { ok: true, redirectUrl: invoice.invoice_url };
   } catch (err) {
-    updateOrderByExternalId(externalId, { status: "CANCELLED", cancelledAt: new Date() });
+    await updateOrderByExternalId(externalId, { status: "CANCELLED", cancelledAt: new Date() });
     return { ok: false, error: toCheckoutErrorMessage(err) };
   }
 }
@@ -125,6 +128,9 @@ export async function createCheckoutOrder(
   _prev: CheckoutActionState,
   formData: FormData,
 ): Promise<CheckoutActionState> {
+  const session = await auth();
+  const userId = session?.user?.id;
+
   const parsed = checkoutSchema.safeParse({
     productSlug: formData.get("productSlug"),
     size: formData.get("size"),
@@ -166,6 +172,7 @@ export async function createCheckoutOrder(
       customerPhone: data.customerPhone,
     },
     `${getAppUrl()}/checkout?slug=${data.productSlug}&size=${data.size}&failed=1`,
+    userId,
   );
 }
 
@@ -173,6 +180,9 @@ export async function createCartCheckoutOrder(
   _prev: CheckoutActionState,
   formData: FormData,
 ): Promise<CheckoutActionState> {
+  const session = await auth();
+  const userId = session?.user?.id;
+
   let itemsRaw: unknown;
   try {
     itemsRaw = JSON.parse(String(formData.get("items") ?? "[]"));
@@ -212,6 +222,7 @@ export async function createCartCheckoutOrder(
       customerPhone: parsed.data.customerPhone,
     },
     `${getAppUrl()}/checkout?from=cart&failed=1`,
+    userId,
   );
 }
 
@@ -219,21 +230,20 @@ export async function createCartCheckoutOrder(
 export async function markOrderCancelledIfPending(
   externalId: string,
 ): Promise<Order | null> {
-  const order = getOrderByExternalId(externalId);
+  const order = await getOrderByExternalId(externalId);
   if (!order || order.status !== "PENDING") return order ?? null;
 
-  return (
-    updateOrderByExternalId(externalId, {
-      status: "CANCELLED",
-      cancelledAt: new Date(),
-    }) ?? order
-  );
+  const updated = await updateOrderByExternalId(externalId, {
+    status: "CANCELLED",
+    cancelledAt: new Date(),
+  });
+  return updated ?? order;
 }
 
 export async function syncOrderPaymentStatus(
   externalId: string,
 ): Promise<Order | null> {
-  const order = getOrderByExternalId(externalId);
+  const order = await getOrderByExternalId(externalId);
   if (!order) return null;
 
   if (
@@ -252,20 +262,20 @@ export async function syncOrderPaymentStatus(
 
     if (mapped === "PAID") {
       return (
-        updateOrderByExternalId(externalId, {
+        await updateOrderByExternalId(externalId, {
           status: "PAID",
           paidAt: new Date(),
-        }) ?? order
-      );
+        })
+      ) ?? order;
     }
 
     if (mapped === "EXPIRED") {
       return (
-        updateOrderByExternalId(externalId, {
+        await updateOrderByExternalId(externalId, {
           status: "EXPIRED",
           expiredAt: new Date(),
-        }) ?? order
-      );
+        })
+      ) ?? order;
     }
   } catch {
     return order;

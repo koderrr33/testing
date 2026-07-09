@@ -1,4 +1,14 @@
-export { products } from "@/data/products";
+export {
+  products,
+  getProductBySlug,
+  getNewArrivals,
+  getRelatedProducts,
+  isSizeAvailable,
+  normalizeSearchQuery,
+  searchProducts,
+} from "./data";
+
+export { MAX_SEARCH_QUERY_LENGTH } from "./helpers";
 
 export type {
   DisplaySize,
@@ -19,12 +29,3 @@ export {
   shopCategoryFilters,
   sizeFilters,
 } from "./filters";
-
-export {
-  getProductBySlug,
-  getRelatedProducts,
-  isSizeAvailable,
-  MAX_SEARCH_QUERY_LENGTH,
-  normalizeSearchQuery,
-  searchProducts,
-} from "./helpers";

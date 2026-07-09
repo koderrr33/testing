@@ -12,6 +12,7 @@ export type OrderLineItem = {
 
 export type Order = {
   externalId: string;
+  userId?: string;
   xenditInvoiceId?: string;
   invoiceUrl?: string;
   status: OrderStatus;
@@ -28,6 +29,7 @@ export type Order = {
 
 export type CreateOrderInput = {
   externalId: string;
+  userId?: string;
   lineItems: OrderLineItem[];
   amount: number;
   customerName: string;

@@ -10,4 +10,5 @@ export {
   createOrder,
   getOrderByExternalId,
   updateOrderByExternalId,
+  getOrdersByUserId,
 } from "./store";

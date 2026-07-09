@@ -1,4 +1,4 @@
-import { products } from "@/data/products";
+import { products } from "./data";
 import type { DisplaySize, Product, ProductSize } from "./types";
 
 export const MAX_SEARCH_QUERY_LENGTH = 100;

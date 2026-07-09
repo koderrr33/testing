@@ -1,4 +1,5 @@
- import { CartProvider } from "@/components/cart/cart-provider";
+import { AuthProvider } from "@/components/auth/auth-provider";
+import { CartProvider } from "@/components/cart/cart-provider";
 import { CartShell } from "@/components/cart/cart-shell";
 import { SiteFooter } from "@/components/layout/site-footer";
 
@@ -8,10 +9,12 @@ export default function SiteLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <CartProvider>
-      {children}
-      <SiteFooter />
-      <CartShell />
-    </CartProvider>
+    <AuthProvider>
+      <CartProvider>
+        {children}
+        <SiteFooter />
+        <CartShell />
+      </CartProvider>
+    </AuthProvider>
   );
 }

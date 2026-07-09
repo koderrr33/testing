@@ -1,11 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import type { NewArrivalProduct } from "@/config/new-arrivals";
+import type { Product } from "@/lib/products";
 import { formatIdr } from "@/lib/format";
 
 type NewArrivalCardProps = {
-  product: NewArrivalProduct;
+  product: Product;
 };
 
 export function NewArrivalCard({ product }: NewArrivalCardProps) {
@@ -34,7 +34,7 @@ export function NewArrivalCard({ product }: NewArrivalCardProps) {
             {formatIdr(product.price)}
           </p>
           <ul className="flex items-center gap-1.5 pt-0.5" aria-label="Color options">
-            {product.colors.map((color) => (
+            {(product.colors ?? []).map((color) => (
               <li key={color.id}>
                 <span
                   className={`block size-2.5 rounded-[2px] sm:size-3 ${color.className}`}

@@ -23,10 +23,10 @@ import { Logo } from "@/components/layout/logo";
 import {
   NavCartIcon,
   NavSearchIcon,
-  NavUserIcon,
 } from "@/components/layout/nav-icons";
 import { NavSearch } from "@/components/layout/nav-search";
 import { MobileMenuDrawer } from "@/components/layout/mobile-menu-drawer";
+import { UserMenu } from "@/components/layout/user-menu";
 import { cn } from "@/lib/utils";
 
 const NAVBAR_EASE: [number, number, number, number] = [0.4, 0, 0.2, 1];
@@ -300,7 +300,7 @@ export function Navbar({
       >
         <motion.div
           className={cn(
-            "relative h-[var(--navbar-height)] overflow-hidden md:h-[var(--navbar-height-md)]",
+            "relative h-[var(--navbar-height)] md:h-[var(--navbar-height-md)]",
             !isTransparent && "border-b border-white/5 bg-[#0A0A0A]/90 backdrop-blur-md",
           )}
           style={
@@ -415,6 +415,8 @@ export function Navbar({
                     <NavSearchIcon />
                   </NavbarActionButton>
 
+                  <UserMenu isLight={isLightSurface} />
+
                   <NavbarActionButton
                     label="Cart"
                     isLight={isLightSurface}
@@ -526,15 +528,7 @@ export function Navbar({
                     <NavSearchIcon />
                   </NavbarActionButton>
 
-                  {!isShopLayout && (
-                    <NavbarActionButton
-                      label="Account"
-                      isLight={isLightSurface}
-                      showLabelOnDesktop={false}
-                    >
-                      <NavUserIcon />
-                    </NavbarActionButton>
-                  )}
+                  <UserMenu isLight={isShopLayout ? false : isLightSurface} />
 
                   <NavbarActionButton
                     label="Cart"

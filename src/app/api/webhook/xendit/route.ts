@@ -41,7 +41,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const order = getOrderByExternalId(externalId);
+  const order = await getOrderByExternalId(externalId);
   if (!order) {
     return NextResponse.json({ received: true, note: "order_not_found" });
   }
@@ -51,12 +51,12 @@ export async function POST(req: Request) {
   }
 
   if (isPaidStatus(status)) {
-    updateOrderByExternalId(externalId, {
+    await updateOrderByExternalId(externalId, {
       status: "PAID",
       paidAt: new Date(),
     });
   } else if (status === "EXPIRED") {
-    updateOrderByExternalId(externalId, {
+    await updateOrderByExternalId(externalId, {
       status: "EXPIRED",
       expiredAt: new Date(),
     });
