@@ -11,7 +11,7 @@ import {
 import { StatusBadge } from "@/components/admin/status-badge";
 import { formatDate, formatIdr } from "@/lib/format-admin";
 import { prisma } from "@/lib/prisma";
-import type { OrderStatus } from "@/generated/prisma";
+import type { OrderStatus } from "@/generated/prisma/enums";
 
 type PageProps = {
   searchParams: Promise<{
