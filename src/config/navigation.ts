@@ -18,7 +18,7 @@ export type NavLink = {
 
 export const mainNavLinks: NavLinkItem[] = [
   { id: "home", href: "/", label: "HOME" },
-  { id: "shop", href: "/shop", label: "SHOP" },
+  { id: "shop", href: "/shop", label: "CATALOG" },
 ];
 
 export const shopNavLinks: NavLinkItem[] = [
@@ -61,7 +61,7 @@ export const exploreLinks: NavLink[] = [
   },
   {
     href: "/shop",
-    label: "SHOP",
+    label: "CATALOG",
     description: "Browse catalog & limited drops",
   },
 ];

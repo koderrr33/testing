@@ -1,18 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { heroSlides } from "@/config/assets";
 
-const AUTOPLAY_DELAY = 6000;
-
 export function HeroCarousel() {
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState(0);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const goTo = useCallback(
     (next: number) => {
@@ -26,22 +23,6 @@ export function HeroCarousel() {
 
   const next = useCallback(() => goTo(index + 1), [goTo, index]);
   const prev = useCallback(() => goTo(index - 1), [goTo, index]);
-
-  const resetAutoplay = useCallback(() => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    if (heroSlides.length <= 1) return;
-    timeoutRef.current = setTimeout(() => {
-      setDirection(1);
-      setIndex((current) => (current + 1) % heroSlides.length);
-    }, AUTOPLAY_DELAY);
-  }, []);
-
-  useEffect(() => {
-    resetAutoplay();
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    };
-  }, [index, resetAutoplay]);
 
   const slide = heroSlides[index];
 

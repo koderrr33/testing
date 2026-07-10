@@ -356,7 +356,7 @@ export function Navbar({
           )}
 
           <div className="relative z-10 mx-auto h-full max-w-[1600px] px-4 sm:px-6 md:px-12 lg:px-16">
-            {isHeroLayout ? (
+            {isHeroLayout || isShopLayout ? (
               <div className="grid h-full grid-cols-[1fr_auto_1fr] items-center gap-3">
                 <div className="flex min-w-0 items-center justify-start gap-2">
                   <AnimatedMenuButton
@@ -368,27 +368,43 @@ export function Navbar({
                     className={cn(
                       "md:hidden",
                       COLOR_TRANSITION_CLASS,
-                      isLightSurface
-                        ? "text-black/90 hover:text-black"
-                        : "text-white/90 hover:text-white",
+                      isShopLayout || !isLightSurface
+                        ? "text-white/90 hover:text-white"
+                        : "text-black/90 hover:text-black",
                     )}
                   />
                   <nav
                     className="hidden min-w-0 overflow-x-auto md:block [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
                     aria-label="Main navigation"
-                    onMouseLeave={handleHoverEnd}
+                    onMouseLeave={isShopLayout ? undefined : handleHoverEnd}
                   >
                     <ul className="flex w-max items-center gap-6 lg:gap-10">
-                      {navLinks.map((link) => (
-                        <NavMenuItem
-                          key={link.id}
-                          link={link}
-                          isLight={isLightSurface}
-                          isActive={isLinkActive(link.href)}
-                          onHoverStart={handleHoverStart}
-                          onHoverEnd={handleHoverEnd}
-                        />
-                      ))}
+                      {navLinks.map((link) =>
+                        isShopLayout ? (
+                          <li key={link.id}>
+                            <Link
+                              href={link.href}
+                              className={cn(
+                                "block whitespace-nowrap text-[10px] font-semibold tracking-[0.18em] text-white uppercase sm:text-[11px] sm:tracking-[0.2em] lg:text-xs",
+                                isLinkActive(link.href)
+                                  ? "opacity-100"
+                                  : "opacity-75 hover:opacity-100",
+                              )}
+                            >
+                              {link.label}
+                            </Link>
+                          </li>
+                        ) : (
+                          <NavMenuItem
+                            key={link.id}
+                            link={link}
+                            isLight={isLightSurface}
+                            isActive={isLinkActive(link.href)}
+                            onHoverStart={handleHoverStart}
+                            onHoverEnd={handleHoverEnd}
+                          />
+                        ),
+                      )}
                     </ul>
                   </nav>
                 </div>
@@ -400,121 +416,14 @@ export function Navbar({
 
                 <div
                   className="relative z-10 flex items-center justify-end gap-2.5 sm:gap-4 md:gap-5 lg:gap-6"
-                  onMouseEnter={hoverRevealEnabled ? handleHoverStart : undefined}
-                  onMouseLeave={isTransparent ? handleHoverEnd : undefined}
-                >
-                  <NavbarActionButton
-                    label="Search"
-                    isLight={isLightSurface}
-                    showLabelOnDesktop={false}
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      setSearchOpen(true);
-                    }}
-                  >
-                    <NavSearchIcon />
-                  </NavbarActionButton>
-
-                  <UserMenu isLight={isLightSurface} />
-
-                  <NavbarActionButton
-                    label="Cart"
-                    isLight={isLightSurface}
-                    showLabelOnDesktop={false}
-                    onClick={() => {
-                      dismissAddedToast();
-                      openCart();
-                    }}
-                  >
-                    <span className="relative">
-                      <NavCartIcon />
-                      <AnimatePresence>
-                        {itemCount > 0 && (
-                          <motion.span
-                            key={itemCount}
-                            initial={
-                              prefersReducedMotion
-                                ? false
-                                : { scale: 0, opacity: 0 }
-                            }
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0, opacity: 0 }}
-                            transition={{
-                              type: "spring",
-                              stiffness: 520,
-                              damping: 26,
-                            }}
-                            className={cn(
-                              "absolute -top-1.5 -right-1.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full px-0.5 text-[9px] font-bold",
-                              isLightSurface
-                                ? "bg-black text-white"
-                                : "bg-white text-black",
-                            )}
-                          >
-                            {itemCount > 9 ? "9+" : itemCount}
-                          </motion.span>
-                        )}
-                      </AnimatePresence>
-                    </span>
-                  </NavbarActionButton>
-                </div>
-              </div>
-            ) : (
-              <div className="flex h-full items-center">
-                <div className="flex min-w-0 shrink-0 items-center">
-                  {isShopLayout ? (
-                    <Logo variant="light" size="compact" className="relative z-10 shrink-0" />
-                  ) : (
-                    <AnimatedNavbarLogo
-                      isLight={isLightSurface}
-                      className="relative z-10"
-                    />
-                  )}
-                </div>
-
-                <nav
-                  className="hidden min-w-0 flex-1 overflow-x-auto pl-6 md:block lg:pl-10 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-                  aria-label="Main navigation"
-                  onMouseLeave={isShopLayout ? undefined : handleHoverEnd}
-                >
-                  <ul className="flex w-max items-center gap-4 sm:gap-5 md:gap-8 lg:gap-10">
-                    {navLinks.map((link) =>
-                      isShopLayout ? (
-                        <li key={link.id}>
-                          <Link
-                            href={link.href}
-                            className={cn(
-                              "block whitespace-nowrap text-[10px] font-semibold tracking-[0.18em] text-white uppercase sm:text-[11px] sm:tracking-[0.2em] lg:text-xs",
-                              isLinkActive(link.href)
-                                ? "opacity-100"
-                                : "opacity-75 hover:opacity-100",
-                            )}
-                          >
-                            {link.label}
-                          </Link>
-                        </li>
-                      ) : (
-                        <NavMenuItem
-                          key={link.id}
-                          link={link}
-                          isLight={isLightSurface}
-                          isActive={isLinkActive(link.href)}
-                          onHoverStart={handleHoverStart}
-                          onHoverEnd={handleHoverEnd}
-                        />
-                      ),
-                    )}
-                  </ul>
-                </nav>
-
-                <div
-                  className="relative z-10 ml-auto flex shrink-0 items-center gap-2.5 sm:gap-4 md:gap-5 lg:gap-6"
                   onMouseEnter={
                     !isShopLayout && hoverRevealEnabled
                       ? handleHoverStart
                       : undefined
                   }
-                  onMouseLeave={!isShopLayout && isTransparent ? handleHoverEnd : undefined}
+                  onMouseLeave={
+                    !isShopLayout && isTransparent ? handleHoverEnd : undefined
+                  }
                 >
                   <NavbarActionButton
                     label="Search"
@@ -578,10 +487,116 @@ export function Navbar({
                       setMobileMenuOpen((open) => !open);
                     }}
                     className={cn(
+                      "md:hidden",
                       COLOR_TRANSITION_CLASS,
                       isShopLayout || !isLightSurface
                         ? "text-white/90 hover:text-white"
                         : "text-black/90 hover:text-black",
+                    )}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="flex h-full items-center">
+                <div className="flex min-w-0 shrink-0 items-center">
+                  <AnimatedNavbarLogo
+                    isLight={isLightSurface}
+                    className="relative z-10"
+                  />
+                </div>
+
+                <nav
+                  className="hidden min-w-0 flex-1 overflow-x-auto pl-6 md:block lg:pl-10 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                  aria-label="Main navigation"
+                  onMouseLeave={handleHoverEnd}
+                >
+                  <ul className="flex w-max items-center gap-4 sm:gap-5 md:gap-8 lg:gap-10">
+                    {navLinks.map((link) => (
+                      <NavMenuItem
+                        key={link.id}
+                        link={link}
+                        isLight={isLightSurface}
+                        isActive={isLinkActive(link.href)}
+                        onHoverStart={handleHoverStart}
+                        onHoverEnd={handleHoverEnd}
+                      />
+                    ))}
+                  </ul>
+                </nav>
+
+                <div
+                  className="relative z-10 ml-auto flex shrink-0 items-center gap-2.5 sm:gap-4 md:gap-5 lg:gap-6"
+                  onMouseEnter={
+                    hoverRevealEnabled ? handleHoverStart : undefined
+                  }
+                  onMouseLeave={isTransparent ? handleHoverEnd : undefined}
+                >
+                  <NavbarActionButton
+                    label="Search"
+                    isLight={isLightSurface}
+                    showLabelOnDesktop={false}
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      setSearchOpen(true);
+                    }}
+                  >
+                    <NavSearchIcon />
+                  </NavbarActionButton>
+
+                  <UserMenu isLight={isLightSurface} />
+
+                  <NavbarActionButton
+                    label="Cart"
+                    isLight={isLightSurface}
+                    showLabelOnDesktop={false}
+                    onClick={() => {
+                      dismissAddedToast();
+                      openCart();
+                    }}
+                  >
+                    <span className="relative">
+                      <NavCartIcon />
+                      <AnimatePresence>
+                        {itemCount > 0 && (
+                          <motion.span
+                            key={itemCount}
+                            initial={
+                              prefersReducedMotion
+                                ? false
+                                : { scale: 0, opacity: 0 }
+                            }
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0, opacity: 0 }}
+                            transition={{
+                              type: "spring",
+                              stiffness: 520,
+                              damping: 26,
+                            }}
+                            className={cn(
+                              "absolute -top-1.5 -right-1.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full px-0.5 text-[9px] font-bold",
+                              isLightSurface
+                                ? "bg-black text-white"
+                                : "bg-white text-black",
+                            )}
+                          >
+                            {itemCount > 9 ? "9+" : itemCount}
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
+                    </span>
+                  </NavbarActionButton>
+
+                  <AnimatedMenuButton
+                    open={mobileMenuOpen}
+                    onClick={() => {
+                      setSearchOpen(false);
+                      setMobileMenuOpen((open) => !open);
+                    }}
+                    className={cn(
+                      COLOR_TRANSITION_CLASS,
+                      isLightSurface
+                        ? "text-black/90 hover:text-black"
+                        : "text-white/90 hover:text-white",
                     )}
                   />
                 </div>
