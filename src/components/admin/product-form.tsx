@@ -8,7 +8,7 @@ import {
   type ActionResult,
 } from "@/lib/admin-actions";
 import { displaySizes, productCategories } from "@/schemas/admin";
-import type { Product } from "@/generated/prisma";
+import type { Product } from "@/generated/prisma/client";
 
 type ProductFormProps = {
   product?: Product;

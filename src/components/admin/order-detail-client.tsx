@@ -10,7 +10,7 @@ import {
   type ActionResult,
 } from "@/lib/admin-actions";
 import { formatDate, formatIdr } from "@/lib/format-admin";
-import type { OrderStatus } from "@/generated/prisma";
+import type { OrderStatus } from "@/generated/prisma/enums";
 
 type LineItem = {
   productSlug: string;
