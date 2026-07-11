@@ -10,9 +10,8 @@ const informationLinks = [
 ];
 
 const findUsLinks = [
-  { label: "Instagram", href: "https://instagram.com" },
-  { label: "Whatsapp", href: "https://wa.me/" },
-  { label: "TikTok", href: "https://tiktok.com" },
+  { label: "Instagram", href: "https://www.instagram.com/be.betterdvl?igsh=bzEzbjV2OTg4dTNn" },
+  { label: "TikTok", href: "https://www.tiktok.com/@be.betterstd" },
 ];
 
 function FooterColumn({

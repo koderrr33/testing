@@ -13,8 +13,8 @@ const productImage = "/images/products/winter/product.webp";
 export const products: Product[] = [
   {
     id: "w1",
-    slug: "winter-goggles-pro",
-    name: "Winter Goggles Pro",
+    slug: "yourproduct-1",
+    name: "Yourproduct 1",
     category: "goggles",
     sizes: defaultSizes,
     image: productImage,
@@ -27,8 +27,8 @@ export const products: Product[] = [
   },
   {
     id: "w2",
-    slug: "winter-jacket-white",
-    name: "Winter Jacket White",
+    slug: "yourproduct-2",
+    name: "Yourproduct 2",
     category: "jacket",
     sizes: defaultSizes,
     image: productImage,
@@ -40,8 +40,8 @@ export const products: Product[] = [
   },
   {
     id: "w3",
-    slug: "winter-puffer-jacket",
-    name: "Winter Puffer Jacket",
+    slug: "yourproduct-3",
+    name: "Yourproduct 3",
     category: "jacket",
     sizes: defaultSizes,
     image: productImage,
@@ -53,8 +53,8 @@ export const products: Product[] = [
   },
   {
     id: "w4",
-    slug: "winter-ski-set",
-    name: "Winter Ski Set",
+    slug: "yourproduct-4",
+    name: "Yourproduct 4",
     category: "ski",
     sizes: defaultSizes,
     image: productImage,
@@ -66,8 +66,8 @@ export const products: Product[] = [
   },
   {
     id: "w5",
-    slug: "winter-snowboard-kit",
-    name: "Winter Snowboard Kit",
+    slug: "yourproduct-5",
+    name: "Yourproduct 5",
     category: "snowboard",
     sizes: defaultSizes,
     image: productImage,

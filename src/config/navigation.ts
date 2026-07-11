@@ -33,9 +33,8 @@ export const footerInformationLinks = [
 ] as const;
 
 export const footerSocialLinks = [
-  { label: "Instagram", href: "#" },
-  { label: "Whatsapp", href: "#" },
-  { label: "TikTok", href: "#" },
+  { label: "Instagram", href: "https://www.instagram.com/be.betterdvl?igsh=bzEzbjV2OTg4dTNn" },
+  { label: "TikTok", href: "https://www.tiktok.com/@be.betterstd" },
 ] as const;
 
 const shopCategoryDescriptions: Partial<Record<ShopFilterCategory, string>> = {
@@ -68,9 +67,9 @@ export const exploreLinks: NavLink[] = [
 
 export const featuredNavProducts = (
   [
-    "winter-goggles-pro",
-    "winter-jacket-white",
-    "winter-puffer-jacket",
+    "yourproduct-1",
+    "yourproduct-2",
+    "yourproduct-3",
   ] as const
 )
   .map((slug) => products.find((product) => product.slug === slug))

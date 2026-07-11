@@ -1,23 +1,11 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider   = "prisma-client"
+  output     = "../src/generated/prisma"
   engineType = "client"
 }
 
 datasource db {
   provider = "postgresql"
-}
-
-enum OrderStatus {
-  PENDING
-  PAID
-  EXPIRED
-  CANCELLED
-}
-
-enum AdminRole {
-  ADMIN
-  SUPERADMIN
 }
 
 model Product {
@@ -49,8 +37,8 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   accounts      Account[]
-  sessions      Session[]
   orders        Order[]
+  sessions      Session[]
 }
 
 model Account {
@@ -91,7 +79,6 @@ model Order {
   id              String      @id @default(cuid())
   externalId      String      @unique
   userId          String?
-  user            User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
   xenditInvoiceId String?
   invoiceUrl      String?
   status          OrderStatus @default(PENDING)
@@ -104,6 +91,7 @@ model Order {
   paidAt          DateTime?
   expiredAt       DateTime?
   cancelledAt     DateTime?
+  user            User?       @relation(fields: [userId], references: [id])
 }
 
 model WebhookEvent {
@@ -140,4 +128,16 @@ model AppSetting {
   value     String
   updatedAt DateTime @updatedAt
   updatedBy String?
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  EXPIRED
+  CANCELLED
+}
+
+enum AdminRole {
+  ADMIN
+  SUPERADMIN
 }

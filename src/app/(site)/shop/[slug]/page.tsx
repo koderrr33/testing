@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Navbar } from "@/components/layout/navbar";
 import { ProductDetail } from "@/components/shop/product-detail";
+import { ProductJsonLd } from "@/components/shop/product-jsonld";
 import { YouMayLike } from "@/components/shop/you-may-like";
 import { getRelatedProducts, products } from "@/lib/products";
 
@@ -29,6 +30,7 @@ export default async function ProductPage({ params }: Props) {
 
   return (
     <main className="min-h-screen bg-white">
+      <ProductJsonLd product={product} />
       <Navbar variant="solid" layout="shop" />
       <div className="pt-[var(--navbar-height)] md:pt-[var(--navbar-height-md)]">
         <ProductDetail product={product} />

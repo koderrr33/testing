@@ -2,26 +2,26 @@ export const heroSlides = [
   {
     id: "slide-goggles",
     src: "/images/products/winter/hero.webp",
-    alt: "Winter Goggles Pro — .bbr winter sport eyewear",
-    href: "/shop/winter-goggles-pro",
+    alt: "Yourproduct 1 — .bbr winter sport gear",
+    href: "/shop/yourproduct-1",
   },
   {
     id: "slide-jacket",
     src: "/images/products/winter/product.webp",
-    alt: "Winter Jacket White — .bbr insulated outerwear",
-    href: "/shop/winter-jacket-white",
+    alt: "Yourproduct 2 — .bbr winter sport gear",
+    href: "/shop/yourproduct-2",
   },
   {
     id: "slide-snowboard",
     src: "/images/products/winter/hero.webp",
-    alt: "Winter Snowboard Kit — .bbr all-mountain board",
-    href: "/shop/winter-snowboard-kit",
+    alt: "Yourproduct 5 — .bbr winter sport gear",
+    href: "/shop/yourproduct-5",
   },
    {
     id: "slide-snowboard",
     src: "/images/products/winter/product.webp",
-    alt: "Winter Snowboard Kit — .bbr all-mountain board",
-    href: "/shop/winter-snowboard-kit",
+    alt: "Yourproduct 5 — .bbr winter sport gear",
+    href: "/shop/yourproduct-5",
   },
 ] as const;
 
@@ -34,15 +34,15 @@ export const featuredBannerPanels = [
   {
     id: "panel-jacket",
     src: "/images/products/winter/product.webp",
-    alt: "Winter Jacket Collection",
+    alt: "Yourproduct 2 Collection",
     buttonAlign: "left" as const,
-    href: "/shop/winter-jacket-white",
+    href: "/shop/yourproduct-2",
   },
   {
     id: "panel-snowboard",
     src: "/images/products/winter/product.webp",
-    alt: "Snowboard Kit",
+    alt: "Yourproduct 5",
     buttonAlign: "center" as const,
-    href: "/shop/winter-snowboard-kit",
+    href: "/shop/yourproduct-5",
   },
 ];
