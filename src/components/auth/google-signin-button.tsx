@@ -2,11 +2,11 @@
 
 import { signIn } from "next-auth/react";
 
-export function GoogleSignInButton() {
+export function GoogleSignInButton({ callbackUrl = "/" }: { callbackUrl?: string }) {
   return (
     <button
       type="button"
-      onClick={() => signIn("google", { callbackUrl: "/" })}
+      onClick={() => signIn("google", { callbackUrl })}
       className="flex w-full items-center justify-center gap-3 border border-black bg-white px-6 py-3 text-sm font-medium text-black transition-colors hover:bg-black/5"
     >
       <svg className="h-5 w-5" viewBox="0 0 24 24">

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { OrdersChart } from "@/components/admin/orders-chart";
 import { StatCard } from "@/components/admin/stat-card";
 import { StatusBadge } from "@/components/admin/status-badge";
@@ -12,9 +13,12 @@ import {
   EmptyState,
 } from "@/components/admin/data-table";
 import { formatDate, formatIdr } from "@/lib/format-admin";
+import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export default async function AdminDashboardPage() {
+  const session = await getSession();
+  if (!session) redirect("/admin/login");
 
   const now = new Date();
   const startOfDay = new Date(now);

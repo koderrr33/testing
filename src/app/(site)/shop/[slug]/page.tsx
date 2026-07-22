@@ -4,29 +4,31 @@ import { Navbar } from "@/components/layout/navbar";
 import { ProductDetail } from "@/components/shop/product-detail";
 import { ProductJsonLd } from "@/components/shop/product-jsonld";
 import { YouMayLike } from "@/components/shop/you-may-like";
-import { getRelatedProducts, products } from "@/lib/products";
+import { getProductBySlug, getRelatedProducts } from "@/lib/products/db";
+import { prisma } from "@/lib/prisma";
 
 type Props = {
   params: Promise<{ slug: string }>;
 };
 
 export async function generateStaticParams() {
+  const products = await prisma.product.findMany({ select: { slug: true } });
   return products.map((p) => ({ slug: p.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const product = products.find((p) => p.slug === slug);
+  const product = await getProductBySlug(slug);
   if (!product) return { title: "Product" };
   return { title: product.name };
 }
 
 export default async function ProductPage({ params }: Props) {
   const { slug } = await params;
-  const product = products.find((p) => p.slug === slug);
+  const product = await getProductBySlug(slug);
   if (!product) notFound();
 
-  const relatedProducts = getRelatedProducts(slug);
+  const relatedProducts = await getRelatedProducts(slug);
 
   return (
     <main className="min-h-screen bg-white">

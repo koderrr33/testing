@@ -1,11 +1,6 @@
 export {
-  products,
-  getProductBySlug,
-  getNewArrivals,
-  getRelatedProducts,
-  isSizeAvailable,
   normalizeSearchQuery,
-  searchProducts,
+  isSizeAvailable,
 } from "./data";
 
 export { MAX_SEARCH_QUERY_LENGTH } from "./helpers";

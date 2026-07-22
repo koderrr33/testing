@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { OrderStatus } from "@/generated/prisma/enums";
-import type { AdminSession } from "@/lib/auth";
 import {
   authenticateAdmin,
   clearSessionCookie,
@@ -13,6 +12,7 @@ import {
 } from "@/lib/auth";
 import { logAudit } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { setXenditMode } from "@/lib/xendit/config";
 import {
   loginSchema,
@@ -40,12 +40,12 @@ export async function loginAction(
     return { success: false, error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
 
-  let session: AdminSession | null = null;
-  try {
-    session = await authenticateAdmin(parsed.data.email, parsed.data.password);
-  } catch (err) {
-    return { success: false, error: err instanceof Error ? err.message : "Too many attempts" };
+  const rateLimit = checkRateLimit("admin-login", 5, 60_000);
+  if (!rateLimit.allowed) {
+    return { success: false, error: "Too many attempts. Try again later." };
   }
+
+  const session = await authenticateAdmin(parsed.data.email, parsed.data.password);
   if (!session) {
     return { success: false, error: "Invalid email or password" };
   }
@@ -215,6 +215,29 @@ export async function retryWebhookAction(eventId: string): Promise<ActionResult>
   }
 
   try {
+    const payload = event.payload as { external_id?: string; status?: string } | null;
+    if (!payload?.external_id || !payload?.status) {
+      return { success: false, error: "Invalid event payload" };
+    }
+
+    const { isPaidStatus } = await import("@/lib/xendit");
+    const { getOrderByExternalId, updateOrderByExternalId } = await import("@/lib/orders");
+
+    const order = await getOrderByExternalId(payload.external_id);
+    if (order && order.status === "PENDING") {
+      if (isPaidStatus(payload.status as "PENDING" | "PAID" | "SETTLED" | "EXPIRED")) {
+        await updateOrderByExternalId(payload.external_id, {
+          status: "PAID",
+          paidAt: new Date(),
+        });
+      } else if (payload.status === "EXPIRED") {
+        await updateOrderByExternalId(payload.external_id, {
+          status: "EXPIRED",
+          expiredAt: new Date(),
+        });
+      }
+    }
+
     await prisma.webhookEvent.update({
       where: { eventId },
       data: {

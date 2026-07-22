@@ -2,12 +2,14 @@
 
 import { useCallback, useRef, useState } from "react";
 
-import { getNewArrivals } from "@/lib/products";
-
-const newArrivalProducts = getNewArrivals();
+import type { Product } from "@/lib/products";
 import { NewArrivalCard } from "@/components/home/new-arrival-card";
 
-export function NewArrivals() {
+type NewArrivalsProps = {
+  products: Product[];
+};
+
+export function NewArrivals({ products }: NewArrivalsProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [progress, setProgress] = useState(0);
 
@@ -25,7 +27,7 @@ export function NewArrivals() {
       </h2>
 
       <div className="hidden gap-4 lg:grid lg:grid-cols-5 lg:gap-5">
-        {newArrivalProducts.map((product) => (
+        {products.map((product) => (
           <NewArrivalCard key={product.id} product={product} />
         ))}
       </div>
@@ -35,7 +37,7 @@ export function NewArrivals() {
         onScroll={updateProgress}
         className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] lg:hidden [&::-webkit-scrollbar]:hidden"
       >
-        {newArrivalProducts.map((product) => (
+        {products.map((product) => (
           <div
             key={product.id}
             className="w-[72vw] max-w-[280px] shrink-0 snap-start sm:w-[42vw]"

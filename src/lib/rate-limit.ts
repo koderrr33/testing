@@ -5,6 +5,14 @@ type RateLimitEntry = {
 
 const store = new Map<string, RateLimitEntry>();
 
+// Periodic cleanup to prevent memory leaks
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of store) {
+    if (now >= entry.resetAt) store.delete(key);
+  }
+}, 60_000);
+
 export function checkRateLimit(
   key: string,
   limit: number,

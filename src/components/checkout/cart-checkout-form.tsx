@@ -63,7 +63,6 @@ export function CartCheckoutForm({
             quantity: item.quantity,
           })),
         )}
-        readOnly
       />
 
       {showPaymentFailed && (

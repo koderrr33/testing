@@ -91,7 +91,12 @@ model Order {
   paidAt          DateTime?
   expiredAt       DateTime?
   cancelledAt     DateTime?
-  user            User?       @relation(fields: [userId], references: [id])
+  user            User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([xenditInvoiceId])
 }
 
 model WebhookEvent {
@@ -101,6 +106,8 @@ model WebhookEvent {
   status      String
   payload     Json?
   processedAt DateTime?
+
+  @@index([status])
 }
 
 model AdminUser {
@@ -121,6 +128,10 @@ model AuditLog {
   entityId   String?
   details    Json?
   createdAt  DateTime @default(now())
+
+  @@index([adminId])
+  @@index([action])
+  @@index([createdAt])
 }
 
 model AppSetting {

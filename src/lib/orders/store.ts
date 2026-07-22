@@ -63,10 +63,19 @@ export async function updateOrderByExternalId(
   return toOrder(row);
 }
 
-export async function getOrdersByUserId(userId: string): Promise<Order[]> {
-  const rows = await prisma.order.findMany({
-    where: { userId },
-    orderBy: { createdAt: "desc" },
-  });
-  return rows.map(toOrder);
+export async function getOrdersByUserId(
+  userId: string,
+  limit = 20,
+  offset = 0,
+): Promise<{ orders: Order[]; total: number }> {
+  const [rows, total] = await Promise.all([
+    prisma.order.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      take: limit,
+      skip: offset,
+    }),
+    prisma.order.count({ where: { userId } }),
+  ]);
+  return { orders: rows.map(toOrder), total };
 }

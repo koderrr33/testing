@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Navbar } from "@/components/layout/navbar";
 import { ProductGrid } from "@/components/shop/product-grid";
 import { ShopBanner } from "@/components/shop/shop-banner";
+import { getAllProducts } from "@/lib/products/db";
 import { isValidShopFilterCategory, normalizeSearchQuery } from "@/lib/products";
 
 export const metadata: Metadata = {
@@ -20,6 +21,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
     : "all";
   const initialSearchQuery =
     typeof params.q === "string" ? normalizeSearchQuery(params.q) : "";
+  const allProducts = await getAllProducts();
 
   return (
     <main className="min-h-screen bg-white pb-20 md:pb-0">
@@ -30,6 +32,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
           key={`${initialCategory}-${initialSearchQuery}`}
           initialCategory={initialCategory}
           initialSearchQuery={initialSearchQuery}
+          products={allProducts}
         />
       </div>
     </main>

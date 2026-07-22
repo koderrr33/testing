@@ -17,10 +17,7 @@ export type AdminSession = {
 function getJwtSecret(): Uint8Array {
   const secret = process.env.ADMIN_JWT_SECRET;
   if (!secret) {
-    if (process.env.NODE_ENV === "production") {
-      throw new Error("ADMIN_JWT_SECRET is required in production");
-    }
-    return new TextEncoder().encode("dev-admin-jwt-secret-change-me");
+    throw new Error("ADMIN_JWT_SECRET environment variable is required");
   }
   return new TextEncoder().encode(secret);
 }
@@ -81,7 +78,7 @@ export async function setSessionCookie(token: string): Promise<void> {
   cookieStore.set(SESSION_COOKIE, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    sameSite: "strict",
     path: "/",
     maxAge: SESSION_MAX_AGE,
   });
@@ -109,43 +106,22 @@ export async function requireAdminApi(): Promise<AdminSession | Response> {
   return session;
 }
 
-const loginAttempts = new Map<string, { count: number; resetAt: number }>();
-
 export async function authenticateAdmin(
   email: string,
   password: string,
 ): Promise<AdminSession | null> {
-  const ip = "global";
-  const now = Date.now();
-  const attempt = loginAttempts.get(ip);
-
-  if (attempt && now < attempt.resetAt) {
-    if (attempt.count >= 5) {
-      const remaining = Math.ceil((attempt.resetAt - now) / 1000 / 60);
-      throw new Error(`Too many attempts. Try again in ${remaining} minutes.`);
-    }
-  } else {
-    loginAttempts.set(ip, { count: 0, resetAt: now + 900_000 });
-  }
-
   const user = await prisma.adminUser.findUnique({
     where: { email: email.toLowerCase().trim() },
   });
 
   if (!user) {
-    const entry = loginAttempts.get(ip)!;
-    entry.count++;
     return null;
   }
 
   const valid = await verifyPassword(password, user.passwordHash);
   if (!valid) {
-    const entry = loginAttempts.get(ip)!;
-    entry.count++;
     return null;
   }
-
-  loginAttempts.delete(ip);
 
   return {
     sub: user.id,

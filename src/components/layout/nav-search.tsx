@@ -9,9 +9,19 @@ import { formatIdr } from "@/lib/format";
 import {
   MAX_SEARCH_QUERY_LENGTH,
   normalizeSearchQuery,
-  searchProducts,
 } from "@/lib/products";
 import { cn } from "@/lib/utils";
+
+type SearchProduct = {
+  id: string;
+  slug: string;
+  name: string;
+  price: number;
+  image: string;
+  category: string;
+  description: string;
+  badge: string | null;
+};
 
 type NavSearchProps = {
   open: boolean;
@@ -24,13 +34,35 @@ export function NavSearch({ open, onClose, isLight }: NavSearchProps) {
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
+  const [allProducts, setAllProducts] = useState<SearchProduct[]>([]);
+
+  useEffect(() => {
+    if (open && allProducts.length === 0) {
+      fetch("/api/products")
+        .then((res) => res.json())
+        .then(setAllProducts)
+        .catch(() => {});
+    }
+  }, [open, allProducts.length]);
 
   const normalizedQuery = useMemo(() => normalizeSearchQuery(query), [query]);
 
-  const results = useMemo(
-    () => (normalizedQuery ? searchProducts(normalizedQuery) : []),
-    [normalizedQuery],
-  );
+  const results = useMemo(() => {
+    if (!normalizedQuery || allProducts.length === 0) return [];
+    const terms = normalizedQuery.toLowerCase().split(/\s+/).filter(Boolean);
+    return allProducts.filter((product) => {
+      const haystack = [
+        product.name,
+        product.slug,
+        product.category,
+        product.description,
+        product.badge ?? "",
+      ]
+        .join(" ")
+        .toLowerCase();
+      return terms.every((term) => haystack.includes(term));
+    });
+  }, [normalizedQuery, allProducts]);
 
   const handleClose = useCallback(() => {
     setQuery("");

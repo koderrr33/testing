@@ -161,7 +161,6 @@ export function OrderDetailClient({ order }: OrderDetailProps) {
                   width={56}
                   height={56}
                   className="h-14 w-14 rounded object-cover"
-                  unoptimized
                 />
               ) : (
                 <div className="flex h-14 w-14 items-center justify-center rounded bg-zinc-800 text-xs text-zinc-500">

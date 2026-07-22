@@ -199,5 +199,4 @@ export function ProductInfoAccordions({
   );
 }
 
-/** @deprecated Use ProductInfoAccordions */
-export const ProductInfoTabs = ProductInfoAccordions;
+

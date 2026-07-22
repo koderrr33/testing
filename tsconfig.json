@@ -19,9 +19,6 @@
     "incremental": true,
     "plugins": [
       {
-        "name": "yourproduct"
-      },
-      {
         "name": "next"
       }
     ],
@@ -40,6 +37,7 @@
     "**/*.mts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "prisma/seed.ts"
   ]
 }

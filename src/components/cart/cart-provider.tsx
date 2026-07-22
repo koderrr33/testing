@@ -57,19 +57,19 @@ function readStoredItems(): CartItem[] {
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
-  const [hydrated, setHydrated] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [addedItem, setAddedItem] = useState<CartItem | null>(null);
 
   useEffect(() => {
-    setItems(readStoredItems());
-    setHydrated(true);
+    const stored = readStoredItems();
+    if (stored.length > 0) {
+      setItems(stored);
+    }
   }, []);
 
   useEffect(() => {
-    if (!hydrated) return;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-  }, [items, hydrated]);
+  }, [items]);
 
   const addItem = useCallback((input: AddToCartInput) => {
     const qty = input.quantity ?? 1;

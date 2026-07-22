@@ -127,7 +127,6 @@ export default async function AdminProductsPage({ searchParams }: PageProps) {
                         width={48}
                         height={48}
                         className="h-12 w-12 rounded object-cover"
-                        unoptimized
                       />
                     ) : (
                       <div className="flex h-12 w-12 items-center justify-center rounded bg-zinc-800 text-xs text-zinc-500">

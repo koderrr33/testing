@@ -1,15 +1,25 @@
 import { NextResponse } from "next/server";
 import { createPaymentSchema } from "@/schemas/payment";
 import { createInvoice, isXenditTestMode, toCheckoutErrorMessage } from "@/lib/xendit";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { auth } from "@/lib/next-auth";
 
-/**
- * REST endpoint alternatif untuk create Invoice (hosted checkout).
- * Flow utama tetap lewat Server Action di actions/checkout.ts.
- *
- * Webhook URL (Test Mode):
- *   {NEXT_PUBLIC_APP_URL}/api/webhook/xendit
- */
 export async function POST(req: Request) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const ip = getClientIp(req);
+  const rateLimit = checkRateLimit(`payment:${ip}`, 10, 60_000);
+
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      { error: "Too many requests. Try again later." },
+      { status: 429 },
+    );
+  }
+
   let body: unknown;
   try {
     body = await req.json();

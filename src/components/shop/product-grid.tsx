@@ -5,20 +5,21 @@ import { ProductCard } from "@/components/shop/product-card";
 import {
   normalizeSearchQuery,
   productMatchesShopFilter,
-  products,
-  searchProducts,
   shopCategoryFilters,
+  type Product,
   type ShopFilterCategory,
 } from "@/lib/products";
 
 type ProductGridProps = {
   initialCategory?: ShopFilterCategory;
   initialSearchQuery?: string;
+  products: Product[];
 };
 
 export function ProductGrid({
   initialCategory = "all",
   initialSearchQuery = "",
+  products,
 }: ProductGridProps) {
   const [category, setCategory] = useState<ShopFilterCategory>(initialCategory);
   const searchQuery = normalizeSearchQuery(initialSearchQuery);
@@ -28,11 +29,21 @@ export function ProductGrid({
       productMatchesShopFilter(product, category),
     );
     if (!searchQuery) return byCategory;
-    const searchMatches = new Set(
-      searchProducts(searchQuery).map((product) => product.id),
-    );
-    return byCategory.filter((product) => searchMatches.has(product.id));
-  }, [category, searchQuery]);
+    const q = searchQuery.toLowerCase();
+    const terms = q.split(/\s+/).filter(Boolean);
+    return byCategory.filter((product) => {
+      const haystack = [
+        product.name,
+        product.slug,
+        product.category,
+        product.description ?? "",
+        product.badge ?? "",
+      ]
+        .join(" ")
+        .toLowerCase();
+      return terms.every((term) => haystack.includes(term));
+    });
+  }, [category, searchQuery, products]);
 
   const sectionTitle = searchQuery
     ? `Results for "${searchQuery}"`

@@ -1,5 +1,4 @@
 import {
-  products,
   shopCategoryFilters,
   type ShopFilterCategory,
 } from "@/lib/products";
@@ -65,14 +64,10 @@ export const exploreLinks: NavLink[] = [
   },
 ];
 
-export const featuredNavProducts = (
-  [
-    "yourproduct-1",
-    "yourproduct-2",
-    "yourproduct-3",
-  ] as const
-)
-  .map((slug) => products.find((product) => product.slug === slug))
-  .filter((product): product is (typeof products)[number] => Boolean(product));
+export const featuredNavProductSlugs = [
+  "yourproduct-1",
+  "yourproduct-2",
+  "yourproduct-3",
+] as const;
 
 export { isValidShopFilterCategory as isValidShopCategory } from "@/lib/products";

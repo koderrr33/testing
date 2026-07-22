@@ -6,6 +6,7 @@ import {
 } from "@/lib/auth";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { loginSchema } from "@/schemas/admin";
+import { prisma } from "@/lib/prisma";
 
 export async function POST(request: Request) {
   const ip = getClientIp(request);
@@ -40,11 +41,29 @@ export async function POST(request: Request) {
 
   const session = await authenticateAdmin(parsed.data.email, parsed.data.password);
   if (!session) {
+    await prisma.auditLog.create({
+      data: {
+        adminId: "system",
+        adminEmail: parsed.data.email,
+        action: "LOGIN_FAILED",
+        entity: "AdminUser",
+        details: { ip },
+      },
+    });
     return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
   }
 
   const token = await createSessionToken(session);
   await setSessionCookie(token);
+
+  await prisma.auditLog.create({
+    data: {
+      adminId: session.sub,
+      adminEmail: session.email,
+      action: "LOGIN_SUCCESS",
+      entity: "AdminUser",
+    },
+  });
 
   return NextResponse.json({
     success: true,

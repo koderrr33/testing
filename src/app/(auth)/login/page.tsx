@@ -2,11 +2,25 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/next-auth";
 import { GoogleSignInButton } from "@/components/auth/google-signin-button";
 
-export default async function CustomerLoginPage() {
+function validateCallbackUrl(url: string | undefined): string | undefined {
+  if (!url) return undefined;
+  // Only allow relative paths to prevent open redirect attacks.
+  // Reject absolute URLs (https://evil.com) and protocol-relative URLs (//evil.com).
+  if (url.startsWith("/") && !url.startsWith("//")) return url;
+  return undefined;
+}
+
+type Props = {
+  searchParams: Promise<{ callbackUrl?: string }>;
+};
+
+export default async function CustomerLoginPage({ searchParams }: Props) {
   const session = await auth();
+  const { callbackUrl: raw } = await searchParams;
+  const callbackUrl = validateCallbackUrl(raw);
 
   if (session?.user) {
-    redirect("/");
+    redirect(callbackUrl || "/");
   }
 
   return (
@@ -18,7 +32,7 @@ export default async function CustomerLoginPage() {
             Sign in with your Google account
           </p>
         </div>
-        <GoogleSignInButton />
+        <GoogleSignInButton callbackUrl={callbackUrl} />
       </div>
     </div>
   );

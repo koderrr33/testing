@@ -177,7 +177,7 @@ export function Navbar({
   const isHeroLayout = layout === "hero";
   const navLinks = isShopLayout ? shopNavLinks : mainNavLinks;
   const pathnameRef = useRef(pathname);
-  pathnameRef.current = pathname;
+  useEffect(() => { pathnameRef.current = pathname; }, [pathname]);
 
   const [isHovered, setIsHovered] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -249,20 +249,26 @@ export function Navbar({
   }, []);
 
   useEffect(() => {
-    if (!isTransparent) {
-      setScrolled(false);
-      setPastHero(false);
-      return;
-    }
-    setScrolled(window.scrollY > 14);
-    if (isHeroLayout && pathname === "/") {
-      setPastHero(window.scrollY > window.innerHeight * 0.75);
-    }
+    const id = requestAnimationFrame(() => {
+      if (!isTransparent) {
+        setScrolled(false);
+        setPastHero(false);
+        return;
+      }
+      setScrolled(window.scrollY > 14);
+      if (isHeroLayout && pathname === "/") {
+        setPastHero(window.scrollY > window.innerHeight * 0.75);
+      }
+    });
+    return () => cancelAnimationFrame(id);
   }, [isTransparent, isHeroLayout, pathname]);
 
   useEffect(() => {
-    setMobileMenuOpen(false);
-    setSearchOpen(false);
+    const id = requestAnimationFrame(() => {
+      setMobileMenuOpen(false);
+      setSearchOpen(false);
+    });
+    return () => cancelAnimationFrame(id);
   }, [pathname]);
 
   const revealBackground = hoverRevealEnabled && isHovered;
@@ -359,20 +365,6 @@ export function Navbar({
             {isHeroLayout || isShopLayout ? (
               <div className="grid h-full grid-cols-[1fr_auto_1fr] items-center gap-3">
                 <div className="flex min-w-0 items-center justify-start gap-2">
-                  <AnimatedMenuButton
-                    open={mobileMenuOpen}
-                    onClick={() => {
-                      setSearchOpen(false);
-                      setMobileMenuOpen((open) => !open);
-                    }}
-                    className={cn(
-                      "md:hidden",
-                      COLOR_TRANSITION_CLASS,
-                      isShopLayout || !isLightSurface
-                        ? "text-white/90 hover:text-white"
-                        : "text-black/90 hover:text-black",
-                    )}
-                  />
                   <nav
                     className="hidden min-w-0 overflow-x-auto md:block [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
                     aria-label="Main navigation"

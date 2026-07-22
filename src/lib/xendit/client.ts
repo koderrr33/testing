@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "node:crypto";
 import { getXenditSecretKey, getXenditWebhookToken } from "./config";
 import { XenditError } from "./errors";
 import { INDONESIA_INVOICE_PAYMENT_METHODS } from "./payment-methods";
@@ -93,5 +94,11 @@ export function verifyWebhookToken(req: Request): boolean {
   if (!webhookToken) return false;
 
   const header = req.headers.get("x-callback-token");
-  return Boolean(header && header === webhookToken);
+  if (!header) return false;
+
+  const a = Buffer.from(header);
+  const b = Buffer.from(webhookToken);
+  if (a.length !== b.length) return false;
+
+  return timingSafeEqual(a, b);
 }

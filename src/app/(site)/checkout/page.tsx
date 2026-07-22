@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { auth } from "@/lib/next-auth";
 import { markOrderCancelledIfPending } from "@/actions/checkout";
 import { CartCheckoutForm } from "@/components/checkout/cart-checkout-form";
 import { CheckoutForm } from "@/components/checkout/checkout-form";
 import { Navbar } from "@/components/layout/navbar";
+import { getProductBySlug } from "@/lib/products/db";
 import {
   displaySizes,
-  getProductBySlug,
   isSizeAvailable,
   type DisplaySize,
 } from "@/lib/products";
@@ -44,6 +45,18 @@ function parseQty(qty: string | undefined): number {
 export default async function CheckoutPage({ searchParams }: Props) {
   const { slug, size: sizeParam, qty, from, failed, order: orderId } =
     await searchParams;
+
+  const session = await auth();
+  if (!session?.user) {
+    const p = new URLSearchParams();
+    if (slug) p.set("slug", slug);
+    if (sizeParam) p.set("size", sizeParam);
+    if (qty) p.set("qty", qty);
+    if (from) p.set("from", from);
+    const qs = p.toString();
+    redirect(`/login?callbackUrl=${encodeURIComponent(`/checkout${qs ? `?${qs}` : ""}`)}`);
+  }
+
   const showPaymentFailed = failed === "1";
 
   if (showPaymentFailed && orderId) {
@@ -94,7 +107,7 @@ export default async function CheckoutPage({ searchParams }: Props) {
     );
   }
 
-  const product = getProductBySlug(slug);
+  const product = await getProductBySlug(slug);
   if (!product) notFound();
 
   const requestedSize = parseSize(sizeParam);

@@ -26,7 +26,7 @@ export const heroSlides = [
 ] as const;
 
 export const shopBannerImage = {
-  src: "/images/products/baner.webp",
+  src: "/images/products/banner.webp",
   alt: "Statis — yourbrand catalog",
 } as const;
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useState } from "react";
 import { slugify } from "@/lib/format-admin";
 import {
   createProductAction,
@@ -44,9 +44,7 @@ export function ProductForm({ product }: ProductFormProps) {
     product?.returnsInfo?.length ? product.returnsInfo : [""],
   );
 
-  useEffect(() => {
-    if (autoSlug) setSlug(slugify(name));
-  }, [name, autoSlug]);
+  const derivedSlug = autoSlug ? slugify(name) : slug;
 
   function updateListItem(
     list: string[],
@@ -57,10 +55,6 @@ export function ProductForm({ product }: ProductFormProps) {
     const next = [...list];
     next[index] = value;
     setList(next);
-  }
-
-  function addListItem(list: string[], setList: (v: string[]) => void) {
-    setList([...list, ""]);
   }
 
   function removeListItem(
@@ -104,7 +98,7 @@ export function ProductForm({ product }: ProductFormProps) {
             <div className="flex gap-2">
               <input
                 name="slug"
-                value={slug}
+                value={derivedSlug}
                 onChange={(e) => {
                   setAutoSlug(false);
                   setSlug(e.target.value);

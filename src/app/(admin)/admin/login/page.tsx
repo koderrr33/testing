@@ -1,12 +1,35 @@
-"use client";
+import { loginSchema } from "@/schemas/admin";
+import { authenticateAdmin, createSessionToken, setSessionCookie } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
-import { useActionState } from "react";
-import { loginAction, type ActionResult } from "@/lib/admin-actions";
+async function login(formData: FormData) {
+  "use server";
 
-const initialState: ActionResult = { success: false };
+  const parsed = loginSchema.safeParse({
+    email: formData.get("email"),
+    password: formData.get("password"),
+  });
 
-export default function AdminLoginPage() {
-  const [state, formAction, pending] = useActionState(loginAction, initialState);
+  if (!parsed.success) {
+    redirect("/admin/login?e=1");
+  }
+
+  const session = await authenticateAdmin(parsed.data.email, parsed.data.password);
+  if (!session) {
+    redirect("/admin/login?e=1");
+  }
+
+  const token = await createSessionToken(session);
+  await setSessionCookie(token);
+  redirect("/admin/dashboard");
+}
+
+export default async function AdminLoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ e?: string }>;
+}) {
+  const { e: error } = await searchParams;
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-950 px-4">
@@ -22,12 +45,12 @@ export default function AdminLoginPage() {
         </div>
 
         <form
-          action={formAction}
+          action={login}
           className="space-y-4 rounded-xl border border-zinc-800 bg-zinc-900/50 p-6"
         >
-          {state.error && (
+          {error && (
             <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
-              {state.error}
+              Invalid email or password
             </div>
           )}
 
@@ -55,10 +78,9 @@ export default function AdminLoginPage() {
 
           <button
             type="submit"
-            disabled={pending}
-            className="w-full rounded-lg bg-white py-2.5 text-sm font-medium text-zinc-900 hover:bg-zinc-100 disabled:opacity-50"
+            className="w-full rounded-lg bg-white py-2.5 text-sm font-medium text-zinc-900 hover:bg-zinc-100"
           >
-            {pending ? "Signing in…" : "Sign in"}
+            Sign in
           </button>
         </form>
       </div>

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 import {
   getOrderByExternalId,
   updateOrderByExternalId,
@@ -10,36 +11,45 @@ import {
   type XenditWebhookPayload,
 } from "@/lib/xendit";
 
-/**
- * Xendit Invoice webhook — update status order otomatis.
- *
- * Setup (Test Mode):
- * 1. Dashboard → Developers → Webhooks → Add URL
- * 2. URL: https://<domain>/api/webhook/xendit
- * 3. Event: Invoices
- * 4. Copy Verification Token → XENDIT_TEST_WEBHOOK_TOKEN di .env
- *
- * Local dev: pakai ngrok/cloudflared, arahkan ke localhost:3000
- */
 export async function POST(req: Request) {
   if (!verifyWebhookToken(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  let rawBody: string;
   let payload: XenditWebhookPayload;
   try {
-    payload = (await req.json()) as XenditWebhookPayload;
+    rawBody = await req.text();
+    payload = JSON.parse(rawBody) as XenditWebhookPayload;
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { external_id: externalId, status } = payload;
-  if (!externalId || !status) {
+  const { id: eventId, external_id: externalId, status } = payload;
+  if (!eventId || !externalId || !status) {
     return NextResponse.json(
-      { error: "Missing external_id or status" },
+      { error: "Missing event id, external_id or status" },
       { status: 400 },
     );
   }
+
+  // Idempotency: skip if already processed
+  const existing = await prisma.webhookEvent.findUnique({
+    where: { eventId },
+  });
+  if (existing) {
+    return NextResponse.json({ received: true, note: "duplicate" });
+  }
+
+  // Persist event immediately for audit trail
+  await prisma.webhookEvent.create({
+    data: {
+      eventId,
+      type: "invoice",
+      status: "received",
+      payload: JSON.parse(rawBody),
+    },
+  });
 
   const order = await getOrderByExternalId(externalId);
   if (!order) {
@@ -50,20 +60,36 @@ export async function POST(req: Request) {
     return NextResponse.json({ received: true, note: "terminal_status" });
   }
 
-  if (isPaidStatus(status)) {
-    await updateOrderByExternalId(externalId, {
-      status: "PAID",
-      paidAt: new Date(),
-    });
-  } else if (status === "EXPIRED") {
-    await updateOrderByExternalId(externalId, {
-      status: "EXPIRED",
-      expiredAt: new Date(),
-    });
-  }
+  try {
+    if (isPaidStatus(status)) {
+      await updateOrderByExternalId(externalId, {
+        status: "PAID",
+        paidAt: new Date(),
+      });
+    } else if (status === "EXPIRED") {
+      await updateOrderByExternalId(externalId, {
+        status: "EXPIRED",
+        expiredAt: new Date(),
+      });
+    }
 
-  return NextResponse.json({
-    received: true,
-    mode: isXenditTestMode() ? "test" : "live",
-  });
+    await prisma.webhookEvent.update({
+      where: { eventId },
+      data: { status: "processed", processedAt: new Date() },
+    });
+
+    return NextResponse.json({
+      received: true,
+      mode: isXenditTestMode() ? "test" : "live",
+    });
+  } catch {
+    await prisma.webhookEvent.update({
+      where: { eventId },
+      data: { status: "failed", processedAt: new Date() },
+    });
+    return NextResponse.json(
+      { error: "Processing failed" },
+      { status: 500 },
+    );
+  }
 }

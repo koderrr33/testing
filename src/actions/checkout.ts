@@ -5,13 +5,13 @@ import {
   checkoutSchema,
 } from "@/schemas/checkout";
 import {
-  createOrder,
   getOrderByExternalId,
   updateOrderByExternalId,
 } from "@/lib/orders";
 import { auth } from "@/lib/next-auth";
 import type { Order, OrderLineItem } from "@/lib/orders";
-import { getProductBySlug, isSizeAvailable } from "@/lib/products";
+import { getProductBySlug } from "@/lib/products/db";
+import { isSizeAvailable } from "@/lib/products";
 import {
   createInvoice,
   getInvoice,
@@ -19,6 +19,7 @@ import {
   toCheckoutErrorMessage,
   type XenditInvoiceStatus,
 } from "@/lib/xendit";
+import { prisma } from "@/lib/prisma";
 
 export type CheckoutActionState = {
   ok: boolean;
@@ -28,7 +29,21 @@ export type CheckoutActionState = {
 };
 
 function getAppUrl(): string {
-  return process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const url = process.env.NEXT_PUBLIC_APP_URL;
+  if (!url) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(
+        "NEXT_PUBLIC_APP_URL wajib diisi di environment production. " +
+        "Set ke domain kamu (https://domainkamu.com).",
+      );
+    }
+    return "http://localhost:3000";
+  }
+  return url;
+}
+
+function generateExternalId(): string {
+  return `ORD-${Date.now().toString(36)}-${crypto.randomUUID().slice(0, 12)}`;
 }
 
 function mapXenditStatus(status: XenditInvoiceStatus): Order["status"] | null {
@@ -37,14 +52,14 @@ function mapXenditStatus(status: XenditInvoiceStatus): Order["status"] | null {
   return null;
 }
 
-function resolveLineItems(
+async function resolveLineItems(
   items: Array<{ productSlug: string; size: OrderLineItem["size"]; quantity: number }>,
-): { lineItems: OrderLineItem[]; amount: number } | { error: string } {
+): Promise<{ lineItems: OrderLineItem[]; amount: number } | { error: string }> {
   const lineItems: OrderLineItem[] = [];
   let amount = 0;
 
   for (const item of items) {
-    const product = getProductBySlug(item.productSlug);
+    const product = await getProductBySlug(item.productSlug);
     if (!product) {
       return { error: `Produk "${item.productSlug}" tidak ditemukan.` };
     }
@@ -76,23 +91,51 @@ async function processCheckout(
   failureRedirectUrl: string,
   userId?: string,
 ): Promise<CheckoutActionState> {
-  const externalId = `ORD-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
+  const externalId = generateExternalId();
   const appUrl = getAppUrl();
 
-  await createOrder({
-    externalId,
-    userId,
-    lineItems,
-    amount,
-    ...customer,
-  });
-
-  const description =
-    lineItems.length === 1
-      ? `${lineItems[0].productName} (${lineItems[0].size}) x${lineItems[0].quantity}`
-      : `${lineItems.length} items — yourbrand order`;
-
   try {
+    await prisma.$transaction(async (tx) => {
+      // Check and decrement stock for each item
+      for (const item of lineItems) {
+        const product = await tx.product.findUnique({
+          where: { slug: item.productSlug },
+        });
+        if (!product) {
+          throw new Error(`Produk "${item.productSlug}" tidak ditemukan.`);
+        }
+        const stock = product.stock as Record<string, number>;
+        const currentStock = stock[item.size] ?? 0;
+        if (currentStock < item.quantity) {
+          throw new Error(`Stok ${item.size} untuk ${product.name} tidak mencukupi. Tersisa ${currentStock}.`);
+        }
+        stock[item.size] = currentStock - item.quantity;
+        await tx.product.update({
+          where: { slug: item.productSlug },
+          data: { stock: stock as object },
+        });
+      }
+
+      await tx.order.create({
+        data: {
+          externalId,
+          userId,
+          lineItems: lineItems as object,
+          amount,
+          customerName: customer.customerName,
+          customerEmail: customer.customerEmail,
+          customerPhone: customer.customerPhone,
+          status: "PENDING",
+        },
+      });
+
+    });
+
+    const description =
+      lineItems.length === 1
+        ? `${lineItems[0].productName} (${lineItems[0].size}) x${lineItems[0].quantity}`
+        : `${lineItems.length} items — yourbrand order`;
+
     const invoice = await createInvoice({
       externalId,
       amount,
@@ -129,7 +172,10 @@ export async function createCheckoutOrder(
   formData: FormData,
 ): Promise<CheckoutActionState> {
   const session = await auth();
-  const userId = session?.user?.id;
+  if (!session?.user?.id) {
+    return { ok: false, error: "Silakan login terlebih dahulu untuk checkout." };
+  }
+  const userId = session.user.id;
 
   const parsed = checkoutSchema.safeParse({
     productSlug: formData.get("productSlug"),
@@ -151,7 +197,7 @@ export async function createCheckoutOrder(
   }
 
   const data = parsed.data;
-  const resolved = resolveLineItems([
+  const resolved = await resolveLineItems([
     {
       productSlug: data.productSlug,
       size: data.size,
@@ -181,7 +227,10 @@ export async function createCartCheckoutOrder(
   formData: FormData,
 ): Promise<CheckoutActionState> {
   const session = await auth();
-  const userId = session?.user?.id;
+  if (!session?.user?.id) {
+    return { ok: false, error: "Silakan login terlebih dahulu untuk checkout." };
+  }
+  const userId = session.user.id;
 
   let itemsRaw: unknown;
   try {
@@ -208,7 +257,7 @@ export async function createCartCheckoutOrder(
     };
   }
 
-  const resolved = resolveLineItems(parsed.data.items);
+  const resolved = await resolveLineItems(parsed.data.items);
   if ("error" in resolved) {
     return { ok: false, error: resolved.error };
   }
